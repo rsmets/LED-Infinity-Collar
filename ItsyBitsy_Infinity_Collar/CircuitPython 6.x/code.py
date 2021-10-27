@@ -31,7 +31,7 @@ pixel_pin = board.D5
 # Number of pixels in the collar (arranged in two rows)
 pixel_num = 24
 
-pixels = neopixel.NeoPixel(pixel_pin, pixel_num, brightness=0.5, auto_write=False)
+pixels = neopixel.NeoPixel(pixel_pin, pixel_num, brightness=0.1, auto_write=False)
 
 # Create a switch from the ItsyBity's on-board pushbutton to toggle charge mode
 mode_pin = digitalio.DigitalInOut(board.SWITCH)
