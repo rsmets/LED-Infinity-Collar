@@ -139,6 +139,14 @@ while True:
                         # Go to the next animation in the sequence
                         animations.next()
                         print("button right pressed: Go to next animation in the sequence")
+                    elif packet.button == ButtonPacket.UP:
+                        # Increase brightness
+                        pixels.brightness = 0.5
+                        print("button up pressed: Increse brightness")
+                    elif packet.button == ButtonPacket.DOWN:
+                        # Decrease brightness
+                        pixels.brightness = 0.1
+                        print("button up pressed: Decrease brightness")
                 elif isinstance(packet, ColorPacket):
                     animations.color = packet.color
                     pulse.color = packet.color
