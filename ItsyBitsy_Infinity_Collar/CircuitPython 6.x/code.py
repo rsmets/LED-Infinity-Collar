@@ -1,5 +1,5 @@
 """
-Code for the LED Infinity Mirror Collar. Allows the animation sequence 
+Code for the LED Infinity Mirror Collar. Allows the animation sequence
 and color to be controlled by input from the Adafruit Bluefruit App
 """
 import board
@@ -58,7 +58,7 @@ random_color_mode = True
 def random_animation_color(anims):
     if random_color_mode:
         anims.color = colorwheel(random.randint(0,255))
-        
+
 animations.add_cycle_complete_receiver(random_animation_color)
 
 
@@ -80,6 +80,8 @@ advertisement = ProvideServicesAdvertisement(uart_service)
 #  e.g. when charging the battery
 charge_mode = False
 
+ble_connected_message = False
+
 # Checks the ItsyBitsy's switch button
 def check_switch():
     global charge_mode
@@ -88,6 +90,7 @@ def check_switch():
         charge_mode = not charge_mode
         # if display has just been turned off, clear all LEDs, disconnect, stop advertising
         if charge_mode:
+            print("charge mode")
             pixels.fill((0,0,0))
             pixels.show()
             if ble.connected:
@@ -105,6 +108,9 @@ while True:
     else:
         current_display.animate()
         if ble.connected:
+            if not ble_connected_message:
+                print("ble connected")
+                ble_connected_message = True
             if uart_service.in_waiting:
                 #Packet is arriving
                 packet = Packet.from_stream(uart_service)
@@ -112,27 +118,36 @@ while True:
                     if packet.button == ButtonPacket.BUTTON_1:
                         # Animation colors change to a random new value after every animation sequence
                         random_color_mode = True
+                        print("button 1 pressed: Animation colors change to a random new value after every animation sequence")
                     elif packet.button == ButtonPacket.BUTTON_2:
                         # Animation colors stay the same unless manually changed
                         random_color_mode = False
+                        print("button 2 pressed: Animation colors stay the same unless manually changed")
                     elif packet.button == ButtonPacket.BUTTON_3:
                         # Stay on the same animation
                         animations._advance_interval = None
+                        print("button 3 pressed: Stay on the same animation")
                     elif packet.button == ButtonPacket.BUTTON_4:
                         # Auto-advance animations
                         animations._advance_interval = seconds_per_animation*1000
+                        print("button 4 pressed: Auto-advance animations")
                     elif packet.button == ButtonPacket.LEFT:
                         # Go to first animation in the sequence
                         animations.activate(0)
+                        print("button left pressed: Go to first animation in the sequence")
                     elif packet.button == ButtonPacket.RIGHT:
                         # Go to the next animation in the sequence
                         animations.next()
+                        print("button right pressed: Go to next animation in the sequence")
                 elif isinstance(packet, ColorPacket):
                     animations.color = packet.color
                     pulse.color = packet.color
                     # temporarily change to pulse display to show off the new color
+                    print("color picker used: temporarily change to pulse display to show off the new color")
                     current_display = pulse
 
         else:
+            # print("ble...")
             if not ble.advertising:
+                print("ble not advertising... starting to")
                 ble.start_advertising(advertisement)
