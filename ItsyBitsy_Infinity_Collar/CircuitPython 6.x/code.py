@@ -31,7 +31,7 @@ pixel_pin = board.D5
 # Number of pixels in the collar (arranged in two rows)
 pixel_num = 24
 
-pixels = neopixel.NeoPixel(pixel_pin, pixel_num, brightness=0.1, auto_write=False)
+pixels = neopixel.NeoPixel(pixel_pin, pixel_num, brightness=0.05, auto_write=False)
 
 # Create a switch from the ItsyBity's on-board pushbutton to toggle charge mode
 mode_pin = digitalio.DigitalInOut(board.SWITCH)
@@ -43,12 +43,14 @@ switch = Debouncer(mode_pin)
 comet = Comet(pixels, speed=0.06, color=(180,0,255), tail_length=10, bounce=True)
 chase = Chase(pixels, speed=0.05, size=3, spacing=3, color=(0,255,255), reverse=True)
 rainbow_comet = RainbowComet(pixels, speed=.06)
-pulse = Pulse(pixels, speed=.04, color=(255,0,0), period = 0.2)
+pulse = Pulse(pixels, speed=.000000000000001, color=(255,0,0), period = 0.8)
 
 
 # Our animations sequence
 seconds_per_animation = 10
-animations = AnimationSequence(comet, rainbow_comet, chase, advance_interval=seconds_per_animation, auto_clear=True)
+# animations = AnimationSequence(comet, rainbow_comet, chase, advance_interval=seconds_per_animation, auto_clear=True)
+animations = AnimationSequence(comet, rainbow_comet, advance_interval=seconds_per_animation, auto_clear=True)
+# animations = AnimationSequence(pulse, auto_clear=True)
 # Current display determines whether we are showing the animation sequence or the pulse animation
 current_display = animations
 
@@ -141,12 +143,12 @@ while True:
                         print("button right pressed: Go to next animation in the sequence")
                     elif packet.button == ButtonPacket.UP:
                         # Increase brightness
-                        pixels.brightness = ( pixels.brightness + 0.1 ) % 1
+                        pixels.brightness = ( pixels.brightness + 0.025 ) % 1
                         print("button up pressed: Increse brightness ")
                         print(pixels.brightness)
                     elif packet.button == ButtonPacket.DOWN:
                         # Decrease brightness
-                        pixels.brightness = ( pixels.brightness - 0.1 ) % 1
+                        pixels.brightness = ( pixels.brightness - 0.025 ) % 1
                         print("button up pressed: Decrease brightness ")
                         print(pixels.brightness)
                 elif isinstance(packet, ColorPacket):
