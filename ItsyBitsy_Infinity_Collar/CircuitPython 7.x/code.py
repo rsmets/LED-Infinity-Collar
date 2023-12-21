@@ -29,7 +29,7 @@ from adafruit_bluefruit_connect.button_packet import ButtonPacket
 pixel_pin = board.D5
 
 # Number of pixels in the collar (arranged in two rows)
-pixel_num = 24
+pixel_num = 30
 # pixel_num = 22 # for the original collar
 
 pixels = neopixel.NeoPixel(pixel_pin, pixel_num, brightness=0.05, auto_write=False)
