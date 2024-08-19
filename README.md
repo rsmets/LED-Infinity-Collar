@@ -21,13 +21,14 @@ arm-none-eabi-gdb
 2. connect to target
 
 ```sh
-target remote localhost:3333
+target extended-remote localhost:3333
 ```
 
 3. load the firmware
 
 ```sh
-load /Users/raysmets/dev/LED-Infinity-Collar/Bootloader/itsybitsy_nrf52840_express_bootloader-0.8.0_s140_6.1.1.hex
+load /Users/raysmets/dev/LED-Infinity-Collar/Bootloader/adafruit-circuitpython-itsybitsy_nrf52840_express-en_US-9.1.1.uf2
+
 ```
 
 4. Reset the monitor and continue
@@ -40,6 +41,10 @@ continue
 Now that you have the itsybitys bootloader installed you can flash the it with CircuitPython. You should be able to see the microcontroller over the the usb interface now.
 
 Copy the Circuit Python uf2 file to main drive. It should then show up in volumes as circuit python!
+
+```sh
+cp Bootloader/adafruit-circuitpython-itsybitsy_nrf52840_express-en_US-8.2.9.uf2 /Volumes/ITSY840BOOT 
+```
 
 ## Software
 
