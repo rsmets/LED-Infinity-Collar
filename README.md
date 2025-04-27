@@ -23,7 +23,7 @@ arm-none-eabi-gdb
 2. Connect to target
 
 ```sh
-target extended-remote localhost:3333
+target remote localhost:3333
 ```
 
 3. Download the [itsybitsy hex firmware](https://github.com/adafruit/Adafruit_nRF52_Bootloader/releases) or use the file in the ./Bootloader directory.
