@@ -41,13 +41,18 @@ mode_pin.direction = digitalio.Direction.INPUT
 mode_pin.pull = digitalio.Pull.UP
 switch = Debouncer(mode_pin)
 
-# Create the animations - using muted colors from palette
-comet = Comet(pixels, speed=0.1, color=(80, 0, 40), tail_length=10, bounce=True)
+# Create the animations - using proportional brightness based on simultaneous LEDs
+# Base brightness = 50% (127), divided by number of simultaneous LEDs
+# Comet: ~1 LED at head = 50% brightness
+# Chase: 3 LEDs = 50%/3 = 16.7% brightness  
+# Pulse: All 30 LEDs = 50%/30 = 1.67% brightness
+
+comet = Comet(pixels, speed=0.1, color=(80, 0, 40), tail_length=10, bounce=True)  # ~1 LED at head
 chase = Chase(
-    pixels, speed=0.12, size=3, spacing=5, color=(60, 0, 80), reverse=True
+    pixels, speed=0.12, size=3, spacing=5, color=(20, 0, 27), reverse=True  # 3 LEDs: 60/3=20, 80/3=27
 )
-rainbow_comet = RainbowComet(pixels, speed=0.08)
-pulse = Pulse(pixels, speed=0.000000000000001, color=(80, 0, 80), period=2.5)
+rainbow_comet = RainbowComet(pixels, speed=0.08)  # Built-in brightness handling
+pulse = Pulse(pixels, speed=0.000000000000001, color=(3, 0, 3), period=2.5)  # 30 LEDs: 80/30≈3
 
 
 # Our animations sequence
@@ -74,7 +79,7 @@ random_color_mode = True
 
 def random_animation_color(anims):
     if random_color_mode:
-        # Pick a new random color for all animations
+        # Pick a new random color for all animations when sequence advances
         new_color = colorwheel(random.randint(0, 255))
         comet.color = new_color
         chase.color = new_color
@@ -82,10 +87,8 @@ def random_animation_color(anims):
         anims.color = new_color
 
 
-# Add receivers for color changes
+# Add receiver only for animation sequence changes (not individual animation cycles)
 animations.add_cycle_complete_receiver(random_animation_color)
-comet.add_cycle_complete_receiver(random_animation_color)
-chase.add_cycle_complete_receiver(random_animation_color)
 
 
 # After we complete three pulse cycles, return to main animations list
