@@ -41,27 +41,29 @@ mode_pin.direction = digitalio.Direction.INPUT
 mode_pin.pull = digitalio.Pull.UP
 switch = Debouncer(mode_pin)
 
-# Create the animations - using proportional brightness based on simultaneous LEDs
-# Base brightness = 50% (127), divided by number of simultaneous LEDs
-# Comet: ~1 LED at head = 50% brightness
-# Chase: 3 LEDs = 50%/3 = 16.7% brightness
-# Pulse: All 30 LEDs = 50%/30 = 1.67% brightness
-
+# Create the animations - will use dynamic proportional brightness
+# Initial colors will be overridden by random_animation_color function
 comet = Comet(
-    pixels, speed=0.1, color=(80, 0, 40), tail_length=10, bounce=True
-)  # ~1 LED at head
+    pixels, speed=0.1, color=(255, 255, 255), tail_length=10, bounce=True
+)
 chase = Chase(
     pixels,
     speed=0.12,
     size=3,
     spacing=5,
-    color=(20, 0, 27),
-    reverse=True,  # 3 LEDs: 60/3=20, 80/3=27
+    color=(255, 255, 255),
+    reverse=True,
 )
-rainbow_comet = RainbowComet(pixels, speed=0.08)  # Built-in brightness handling
+rainbow_comet = RainbowComet(pixels, speed=0.08)
 pulse = Pulse(
-    pixels, speed=0.000000000000001, color=(3, 0, 3), period=2.5
-)  # 30 LEDs: 80/30≈3
+    pixels, speed=0.000000000000001, color=(255, 255, 255), period=2.5
+)
+
+# Set initial proportional colors
+initial_color = (80, 0, 40)  # Deep red base color
+comet.color = initial_color  # 1 LED = full brightness
+chase.color = tuple(int(c / 3) for c in initial_color)  # 3 LEDs = 1/3 brightness
+pulse.color = tuple(int(c / 30) for c in initial_color)  # 30 LEDs = 1/30 brightness
 
 
 # Our animations sequence
@@ -88,11 +90,13 @@ random_color_mode = True
 
 def random_animation_color(anims):
     if random_color_mode:
-        # Pick a new random color but maintain proportional brightness
-        base_color = colorwheel(random.randint(0, 255))
+        # Pick a new random color but keep it subdued (max 80 brightness)
+        full_color = colorwheel(random.randint(0, 255))
+        # Scale down to subdued brightness (max 80 instead of 255)
+        base_color = tuple(int(c * 80 / 255) for c in full_color)
 
         # Apply proportional brightness scaling
-        # Comet: 1 LED = full brightness
+        # Comet: 1 LED = full subdued brightness
         comet.color = base_color
 
         # Chase: 3 LEDs = 1/3 brightness
@@ -210,10 +214,12 @@ while True:
                         print(pixels.brightness)
                 elif isinstance(packet, ColorPacket):
                     # Update all animations with proportional brightness
-                    base_color = packet.color
+                    # Scale down BLE color to subdued brightness (max 80 instead of 255)
+                    full_color = packet.color
+                    base_color = tuple(int(c * 80 / 255) for c in full_color)
 
                     # Apply proportional brightness scaling
-                    comet.color = base_color  # 1 LED = full brightness
+                    comet.color = base_color  # 1 LED = full subdued brightness
                     chase.color = tuple(
                         int(c / 3) for c in base_color
                     )  # 3 LEDs = 1/3 brightness
