@@ -74,10 +74,18 @@ random_color_mode = True
 
 def random_animation_color(anims):
     if random_color_mode:
-        anims.color = colorwheel(random.randint(0, 255))
+        # Pick a new random color for all animations
+        new_color = colorwheel(random.randint(0, 255))
+        comet.color = new_color
+        chase.color = new_color
+        pulse.color = new_color
+        anims.color = new_color
 
 
+# Add receivers for color changes
 animations.add_cycle_complete_receiver(random_animation_color)
+comet.add_cycle_complete_receiver(random_animation_color)
+chase.add_cycle_complete_receiver(random_animation_color)
 
 
 # After we complete three pulse cycles, return to main animations list
