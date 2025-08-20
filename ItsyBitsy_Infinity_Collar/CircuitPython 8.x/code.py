@@ -41,13 +41,13 @@ mode_pin.direction = digitalio.Direction.INPUT
 mode_pin.pull = digitalio.Pull.UP
 switch = Debouncer(mode_pin)
 
-# Create the animations - all using 50% brightness colors (127 max per channel)
-comet = Comet(pixels, speed=0.1, color=(90, 0, 127), tail_length=10, bounce=True)
+# Create the animations - using muted colors from palette
+comet = Comet(pixels, speed=0.1, color=(80, 0, 40), tail_length=10, bounce=True)
 chase = Chase(
-    pixels, speed=0.12, size=3, spacing=5, color=(90, 127, 127), reverse=True
+    pixels, speed=0.12, size=3, spacing=5, color=(60, 0, 80), reverse=True
 )
 rainbow_comet = RainbowComet(pixels, speed=0.08)
-pulse = Pulse(pixels, speed=0.000000000000001, color=(127, 0, 0), period=2.5)
+pulse = Pulse(pixels, speed=0.000000000000001, color=(80, 0, 80), period=2.5)
 
 
 # Our animations sequence
