@@ -44,15 +44,24 @@ switch = Debouncer(mode_pin)
 # Create the animations - using proportional brightness based on simultaneous LEDs
 # Base brightness = 50% (127), divided by number of simultaneous LEDs
 # Comet: ~1 LED at head = 50% brightness
-# Chase: 3 LEDs = 50%/3 = 16.7% brightness  
+# Chase: 3 LEDs = 50%/3 = 16.7% brightness
 # Pulse: All 30 LEDs = 50%/30 = 1.67% brightness
 
-comet = Comet(pixels, speed=0.1, color=(80, 0, 40), tail_length=10, bounce=True)  # ~1 LED at head
+comet = Comet(
+    pixels, speed=0.1, color=(80, 0, 40), tail_length=10, bounce=True
+)  # ~1 LED at head
 chase = Chase(
-    pixels, speed=0.12, size=3, spacing=5, color=(20, 0, 27), reverse=True  # 3 LEDs: 60/3=20, 80/3=27
+    pixels,
+    speed=0.12,
+    size=3,
+    spacing=5,
+    color=(20, 0, 27),
+    reverse=True,  # 3 LEDs: 60/3=20, 80/3=27
 )
 rainbow_comet = RainbowComet(pixels, speed=0.08)  # Built-in brightness handling
-pulse = Pulse(pixels, speed=0.000000000000001, color=(3, 0, 3), period=2.5)  # 30 LEDs: 80/30≈3
+pulse = Pulse(
+    pixels, speed=0.000000000000001, color=(3, 0, 3), period=2.5
+)  # 30 LEDs: 80/30≈3
 
 
 # Our animations sequence
@@ -79,12 +88,21 @@ random_color_mode = True
 
 def random_animation_color(anims):
     if random_color_mode:
-        # Pick a new random color for all animations when sequence advances
-        new_color = colorwheel(random.randint(0, 255))
-        comet.color = new_color
-        chase.color = new_color
-        pulse.color = new_color
-        anims.color = new_color
+        # Pick a new random color but maintain proportional brightness
+        base_color = colorwheel(random.randint(0, 255))
+
+        # Apply proportional brightness scaling
+        # Comet: 1 LED = full brightness
+        comet.color = base_color
+
+        # Chase: 3 LEDs = 1/3 brightness
+        chase.color = tuple(int(c / 3) for c in base_color)
+
+        # Pulse: 30 LEDs = 1/30 brightness
+        pulse.color = tuple(int(c / 30) for c in base_color)
+
+        # Set sequence color to base color
+        anims.color = base_color
 
 
 # Add receiver only for animation sequence changes (not individual animation cycles)
@@ -191,11 +209,18 @@ while True:
                         print("button up pressed: Decrease brightness ")
                         print(pixels.brightness)
                 elif isinstance(packet, ColorPacket):
-                    # Update all animations with the new color
-                    comet.color = packet.color
-                    chase.color = packet.color
-                    pulse.color = packet.color
-                    animations.color = packet.color
+                    # Update all animations with proportional brightness
+                    base_color = packet.color
+
+                    # Apply proportional brightness scaling
+                    comet.color = base_color  # 1 LED = full brightness
+                    chase.color = tuple(
+                        int(c / 3) for c in base_color
+                    )  # 3 LEDs = 1/3 brightness
+                    pulse.color = tuple(
+                        int(c / 30) for c in base_color
+                    )  # 30 LEDs = 1/30 brightness
+                    animations.color = base_color
                     # temporarily change to pulse display to show off the new color
                     print(
                         "color picker used: temporarily change to pulse display to show off the new color"
