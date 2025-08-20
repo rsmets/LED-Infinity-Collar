@@ -56,7 +56,7 @@ chase = Chase(
 )
 rainbow_comet = RainbowComet(pixels, speed=0.08)
 pulse = Pulse(
-    pixels, speed=0.000000000000001, color=(255, 255, 255), period=2.5
+    pixels, speed=0.08, color=(255, 255, 255), period=2.5
 )
 
 # Set initial proportional colors
@@ -112,6 +112,9 @@ def random_animation_color(anims):
 # Add receiver only for animation sequence changes (not individual animation cycles)
 animations.add_cycle_complete_receiver(random_animation_color)
 
+
+# Initialize with a random subdued color if enabled so we don't start on the hardcoded initial color
+random_animation_color(animations)
 
 # After we complete three pulse cycles, return to main animations list
 def pulse_finished(anim):
@@ -188,6 +191,7 @@ while True:
                         print("button 3 pressed: Stay on the same animation")
                     elif packet.button == ButtonPacket.BUTTON_4:
                         # Auto-advance animations
+                        # Library stores _advance_interval in milliseconds
                         animations._advance_interval = seconds_per_animation * 1000
                         print("button 4 pressed: Auto-advance animations")
                     elif packet.button == ButtonPacket.LEFT:
@@ -204,13 +208,14 @@ while True:
                         )
                     elif packet.button == ButtonPacket.UP:
                         # Increase brightness
-                        pixels.brightness = (pixels.brightness + 0.025) % 1
-                        print("button up pressed: Increse brightness ")
+                        # Clamp to a safe subdued range to avoid wrap-around and overly bright output
+                        pixels.brightness = min(0.2, round(pixels.brightness + 0.025, 3))
+                        print("button up pressed: Increase brightness ")
                         print(pixels.brightness)
                     elif packet.button == ButtonPacket.DOWN:
                         # Decrease brightness
-                        pixels.brightness = (pixels.brightness - 0.025) % 1
-                        print("button up pressed: Decrease brightness ")
+                        pixels.brightness = max(0.02, round(pixels.brightness - 0.025, 3))
+                        print("button down pressed: Decrease brightness ")
                         print(pixels.brightness)
                 elif isinstance(packet, ColorPacket):
                     # Update all animations with proportional brightness
