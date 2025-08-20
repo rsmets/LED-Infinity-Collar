@@ -59,6 +59,7 @@ animations = AnimationSequence(
     pulse,
     advance_interval=seconds_per_animation,
     auto_clear=True,
+    auto_reset=True,
 )
 # animations = AnimationSequence(
 #    comet, rainbow_comet, advance_interval=seconds_per_animation, auto_clear=True
