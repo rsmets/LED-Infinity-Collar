@@ -43,9 +43,11 @@ switch = Debouncer(mode_pin)
 
 # Create the animations
 comet = Comet(pixels, speed=0.1, color=(180, 0, 255), tail_length=10, bounce=True)
-chase = Chase(pixels, speed=0.07, size=3, spacing=3, color=(0, 255, 255), reverse=True)
+chase = Chase(
+    pixels, speed=0.12, size=3, spacing=5, color=(180, 255, 255), reverse=True
+)
 rainbow_comet = RainbowComet(pixels, speed=0.08)
-pulse = Pulse(pixels, speed=0.000000000000001, color=(255, 0, 0), period=0.8)
+pulse = Pulse(pixels, speed=0.000000000000001, color=(255, 0, 0), period=1.5)
 
 
 # Our animations sequence
