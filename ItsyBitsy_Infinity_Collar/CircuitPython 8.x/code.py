@@ -41,19 +41,45 @@ mode_pin.direction = digitalio.Direction.INPUT
 mode_pin.pull = digitalio.Pull.UP
 switch = Debouncer(mode_pin)
 
-# Create the animations
-comet = Comet(pixels, speed=0.1, color=(180, 0, 255), tail_length=10, bounce=True)
-chase = Chase(pixels, speed=0.07, size=3, spacing=3, color=(0, 255, 255), reverse=True)
+# Create the animations - will use dynamic proportional brightness
+# Initial colors will be overridden by random_animation_color function
+comet = Comet(
+    pixels, speed=0.1, color=(255, 255, 255), tail_length=10, bounce=True
+)
+chase = Chase(
+    pixels,
+    speed=0.12,
+    size=3,
+    spacing=5,
+    color=(255, 255, 255),
+    reverse=True,
+)
 rainbow_comet = RainbowComet(pixels, speed=0.08)
-pulse = Pulse(pixels, speed=0.000000000000001, color=(255, 0, 0), period=0.8)
+pulse = Pulse(
+    pixels, speed=0.08, color=(255, 255, 255), period=2.5
+)
+
+# Set initial proportional colors
+initial_color = (80, 0, 40)  # Deep red base color
+comet.color = initial_color  # 1 LED = full brightness
+chase.color = tuple(int(c / 3) for c in initial_color)  # 3 LEDs = 1/3 brightness
+pulse.color = tuple(int(c / 30) for c in initial_color)  # 30 LEDs = 1/30 brightness
 
 
 # Our animations sequence
 seconds_per_animation = 10
-# animations = AnimationSequence(comet, rainbow_comet, chase, advance_interval=seconds_per_animation, auto_clear=True)
 animations = AnimationSequence(
-    comet, rainbow_comet, advance_interval=seconds_per_animation, auto_clear=True
+    comet,
+    rainbow_comet,
+    chase,
+    pulse,
+    advance_interval=seconds_per_animation,
+    auto_clear=True,
+    auto_reset=True,
 )
+# animations = AnimationSequence(
+#    comet, rainbow_comet, advance_interval=seconds_per_animation, auto_clear=True
+# )
 # animations = AnimationSequence(pulse, auto_clear=True)
 # Current display determines whether we are showing the animation sequence or the pulse animation
 current_display = animations
@@ -64,11 +90,31 @@ random_color_mode = True
 
 def random_animation_color(anims):
     if random_color_mode:
-        anims.color = colorwheel(random.randint(0, 255))
+        # Pick a new random color but keep it subdued (max 80 brightness)
+        full_color = colorwheel(random.randint(0, 255))
+        # Scale down to subdued brightness (max 80 instead of 255)
+        base_color = tuple(int(c * 80 / 255) for c in full_color)
+
+        # Apply proportional brightness scaling
+        # Comet: 1 LED = full subdued brightness
+        comet.color = base_color
+
+        # Chase: 3 LEDs = 1/3 brightness
+        chase.color = tuple(int(c / 3) for c in base_color)
+
+        # Pulse: 30 LEDs = 1/30 brightness
+        pulse.color = tuple(int(c / 30) for c in base_color)
+
+        # Set sequence color to base color
+        anims.color = base_color
 
 
+# Add receiver only for animation sequence changes (not individual animation cycles)
 animations.add_cycle_complete_receiver(random_animation_color)
 
+
+# Initialize with a random subdued color if enabled so we don't start on the hardcoded initial color
+random_animation_color(animations)
 
 # After we complete three pulse cycles, return to main animations list
 def pulse_finished(anim):
@@ -145,6 +191,7 @@ while True:
                         print("button 3 pressed: Stay on the same animation")
                     elif packet.button == ButtonPacket.BUTTON_4:
                         # Auto-advance animations
+                        # Library stores _advance_interval in milliseconds
                         animations._advance_interval = seconds_per_animation * 1000
                         print("button 4 pressed: Auto-advance animations")
                     elif packet.button == ButtonPacket.LEFT:
@@ -161,17 +208,30 @@ while True:
                         )
                     elif packet.button == ButtonPacket.UP:
                         # Increase brightness
-                        pixels.brightness = (pixels.brightness + 0.025) % 1
-                        print("button up pressed: Increse brightness ")
+                        # Clamp to a safe subdued range to avoid wrap-around and overly bright output
+                        pixels.brightness = min(0.2, round(pixels.brightness + 0.025, 3))
+                        print("button up pressed: Increase brightness ")
                         print(pixels.brightness)
                     elif packet.button == ButtonPacket.DOWN:
                         # Decrease brightness
-                        pixels.brightness = (pixels.brightness - 0.025) % 1
-                        print("button up pressed: Decrease brightness ")
+                        pixels.brightness = max(0.02, round(pixels.brightness - 0.025, 3))
+                        print("button down pressed: Decrease brightness ")
                         print(pixels.brightness)
                 elif isinstance(packet, ColorPacket):
-                    animations.color = packet.color
-                    pulse.color = packet.color
+                    # Update all animations with proportional brightness
+                    # Scale down BLE color to subdued brightness (max 80 instead of 255)
+                    full_color = packet.color
+                    base_color = tuple(int(c * 80 / 255) for c in full_color)
+
+                    # Apply proportional brightness scaling
+                    comet.color = base_color  # 1 LED = full subdued brightness
+                    chase.color = tuple(
+                        int(c / 3) for c in base_color
+                    )  # 3 LEDs = 1/3 brightness
+                    pulse.color = tuple(
+                        int(c / 30) for c in base_color
+                    )  # 30 LEDs = 1/30 brightness
+                    animations.color = base_color
                     # temporarily change to pulse display to show off the new color
                     print(
                         "color picker used: temporarily change to pulse display to show off the new color"
