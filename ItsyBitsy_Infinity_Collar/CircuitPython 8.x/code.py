@@ -41,21 +41,28 @@ mode_pin.direction = digitalio.Direction.INPUT
 mode_pin.pull = digitalio.Pull.UP
 switch = Debouncer(mode_pin)
 
-# Create the animations
-comet = Comet(pixels, speed=0.1, color=(180, 0, 255), tail_length=10, bounce=True)
+# Create the animations - all using 50% brightness colors (127 max per channel)
+comet = Comet(pixels, speed=0.1, color=(90, 0, 127), tail_length=10, bounce=True)
 chase = Chase(
-    pixels, speed=0.12, size=3, spacing=5, color=(180, 255, 255), reverse=True
+    pixels, speed=0.12, size=3, spacing=5, color=(90, 127, 127), reverse=True
 )
 rainbow_comet = RainbowComet(pixels, speed=0.08)
-pulse = Pulse(pixels, speed=0.000000000000001, color=(255, 0, 0), period=1.5)
+pulse = Pulse(pixels, speed=0.000000000000001, color=(127, 0, 0), period=2.5)
 
 
 # Our animations sequence
 seconds_per_animation = 10
-# animations = AnimationSequence(comet, rainbow_comet, chase, advance_interval=seconds_per_animation, auto_clear=True)
 animations = AnimationSequence(
-    comet, rainbow_comet, advance_interval=seconds_per_animation, auto_clear=True
+    comet,
+    rainbow_comet,
+    chase,
+    pulse,
+    advance_interval=seconds_per_animation,
+    auto_clear=True,
 )
+# animations = AnimationSequence(
+#    comet, rainbow_comet, advance_interval=seconds_per_animation, auto_clear=True
+# )
 # animations = AnimationSequence(pulse, auto_clear=True)
 # Current display determines whether we are showing the animation sequence or the pulse animation
 current_display = animations
@@ -172,8 +179,11 @@ while True:
                         print("button up pressed: Decrease brightness ")
                         print(pixels.brightness)
                 elif isinstance(packet, ColorPacket):
-                    animations.color = packet.color
+                    # Update all animations with the new color
+                    comet.color = packet.color
+                    chase.color = packet.color
                     pulse.color = packet.color
+                    animations.color = packet.color
                     # temporarily change to pulse display to show off the new color
                     print(
                         "color picker used: temporarily change to pulse display to show off the new color"
